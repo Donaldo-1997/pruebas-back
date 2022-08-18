@@ -1,28 +1,37 @@
 const { Router } = require("express");
-const { Product, Size } = require("../db");
+const { Size } = require("../db");
 const router = Router();
-const axios = require("axios");
-const { getDbSize } = require("../controllers/index.js");
-const { defaults } = require("pg");
+const { getDbSize, cargoalDB } = require("../controllers/index.js");
 
 router.get("/", async (req, res) => {
   try {
     const sizeDb = await getDbSize();
 
     if(!sizeDb.length){
-    let sizeProduct = [{id:35, stock:5, counter:0}, {id:36, stock:5, counter:0},{id:37, stock:5, counter:0},{id:38, stock:5, counter:0},{id:39, stock:5, counter:0},{id:40, stock:5, counter:0},{id:41, stock:5, counter:0},{id:42, stock:5, counter:0},{id:43, stock:5, counter:0},{id:44, stock:5, counter:0},{id:45, stock:5, counter:0}]
-      
-      sizeProduct.forEach(async (s) => {
-        await Size.findOrCreate({
-          where: { id: s.id },
-          defaults: { stock: s.stock, counter: s.counter }
+    
+      const sizeProduct = await cargoalDB()
+      const result = sizeProduct.flat().map(s=>s.size.map(a=>{
+        return({
+          number:a.number,
+          stock:a.stock,
+          solds:a.solds
         })
-      })
-      res.status(200).json(sizeProduct);
+      }))
+      const setSizes = [...new Set(result.map(JSON.stringify))].map(e => JSON.parse(e))
+      
+      const data =setSizes.forEach((s) => s.map(async(i)=>{
+        await Size.create({
+          number:i.number,
+          stock:i.stock, 
+          solds:i.solds 
+        })
+      }))
+      res.status(200).json(data);
     } else {
       res.status(200).json(sizeDb);
     }
     } catch (err) {
+      console.log(err)
     res.status(404).json(err);
   }
 });

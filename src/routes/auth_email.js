@@ -2,38 +2,31 @@ const { Router } = require("express");
 const router = Router();
 const passport = require("passport");
 const { mail } = require('../controllers/nodemailer');
-const { User, Order, Review } = require('../db.js');
+const { User, Order } = require('../db.js');
 require("../controllers/passport-setup");
 
 const { CLIENT_URL } = process.env;
 
-router.get("/login/success", async (req, res, next) => {
-  // if (req.user) {
+router.get("/login/success", async (req, res) => {
+  if (req.user) {
 
-    try {
-      const email = req.user.emails[0].value
+    const email = req.user.email
+
+    const userDB = await User.findOne({ 
+      where: { email }, 
+      include: [
+        { all: true }
+      ]
+    })
+    
+    return res.status(200).json({
+      user: userDB,
+      token: req.cookies.session
+      //   cookies: req.cookies
+    });
+  }
   
-      const userDB = await User.findOne({ 
-        where: { email }, 
-        include: [
-          { model: Review },
-          { model: Order },
-        ]
-      })
-      
-      return res.status(200).json({
-        user: userDB,
-        token: req.cookies.session
-        //   cookies: req.cookies
-      });
-      
-    } catch (error) {
-      console.log(error)
-      next(error)
-    }
-  // }
-
-  // else res.status(400).send('solicitud inválida')
+  else res.status(400).send('solicitud inválida')
 });
 
 router.get("/login/failed", (req, res) => {

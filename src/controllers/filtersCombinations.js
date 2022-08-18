@@ -16,7 +16,7 @@ function getAllFilters({ priceMax, priceMin, category, brand, name, size }) {
           }
         },
         include: [
-          { model: Size, where: { id: size}},
+          { model: Size, where: { number: size}},
           { model: Brand, where: { name: { [Op.iLike]: `%${brand}%` } } },
           { model: Category, where: { name: { [Op.iLike]: `%${category}%` } } },
         ]
@@ -35,7 +35,7 @@ function getAllFilters({ priceMax, priceMin, category, brand, name, size }) {
           }
         },
         include: [
-          { model: Size, where: { id: size}},
+          { model: Size, where: { number: size}},
           { model: Brand, where: { name: { [Op.iLike]: `%${brand}%` } } },
           { model: Category},
         ]
@@ -71,7 +71,7 @@ function getAllFilters({ priceMax, priceMin, category, brand, name, size }) {
           }
         },
         include: [
-          { model: Size, where: { id: size}},
+          { model: Size, where: { number: size}},
           { model: Brand, where: { name: { [Op.iLike]: `%${brand}%` } } },
           { model: Category, where: { name: { [Op.iLike]: `%${category}%` } }},
         ]
@@ -142,7 +142,7 @@ function getAllFilters({ priceMax, priceMin, category, brand, name, size }) {
           }
         },
         include: [
-          { model: Size, where: { id: size}},
+          { model: Size, where: { number: size}},
           { model: Brand, where: { name: { [Op.iLike]: `%${brand}%` } } },
           { model: Category},
         ]
@@ -155,7 +155,7 @@ function getAllFilters({ priceMax, priceMin, category, brand, name, size }) {
           title: { [Op.iLike]: `%${name}%` },
         },
         include: [
-          { model: Size, where: { id: size}},
+          { model: Size, where: { number: size}},
           { model: Brand, where: { name: { [Op.iLike]: `%${brand}%` } } },
           { model: Category, where: { name: { [Op.iLike]: `%${category}%` } } },
         ]
@@ -237,7 +237,7 @@ function getAllFilters({ priceMax, priceMin, category, brand, name, size }) {
           }
         },
         include: [
-          { model: Size, where: { id: size}},
+          { model: Size, where: { number: size}},
           { model: Brand},
           { model: Category},
         ]
@@ -246,7 +246,7 @@ function getAllFilters({ priceMax, priceMin, category, brand, name, size }) {
     else if(size && category && brand){
       options = {
           include: [
-          { model: Size, where: { id: size}},
+          { model: Size, where: { number: size}},
           { model: Brand, where: { name: { [Op.iLike]: `%${brand}%` } }},
           { model: Category, where: { name: { [Op.iLike]: `%${category}%` } }},
         ]
@@ -288,7 +288,7 @@ function getAllFilters({ priceMax, priceMin, category, brand, name, size }) {
     else if(size && brand){
       options = {
           include: [
-          { model: Size, where: { id: size}},
+          { model: Size, where: { number: size}},
           { model: Brand, where: { name: { [Op.iLike]: `%${brand}%` } } },
           { model: Category},
         ]
@@ -297,7 +297,7 @@ function getAllFilters({ priceMax, priceMin, category, brand, name, size }) {
     else if(size && category){
       options = {
           include: [
-          { model: Size, where: { id: size}},
+          { model: Size, where: { number: size}},
           { model: Brand},
           { model: Category, where: { name: { [Op.iLike]: `%${category}%` } }},
         ]
@@ -310,13 +310,13 @@ function getAllFilters({ priceMax, priceMin, category, brand, name, size }) {
           title: { [Op.iLike]: `%${name}%` },
         },
         include: [
-          { model: Size, where: { id: size}},
+          { model: Size, where: { number: size}},
           { model: Brand},
           { model: Category},
         ]
       }
     }
-    // console.log(options)
+    console.log(options)
     return options
   }
   module.exports={getAllFilters}

@@ -2,11 +2,6 @@ const { Product, Category, Brand, Size } = require("../db");
 const axios = require("axios");
 const {Op} = require ("sequelize");
 
-const getDb = async () => {
-  const foundDate = await Product.findAll({ include: { model: Category, attributes: ["id", "name"], throught: { attributes: [] } } });
-  return foundDate;
-};
-
 const setDataApi = async () => {
   const url = "https://api.mercadolibre.com/sites/MLA/search?category=";
   //------------------------------TODOS LOS IDS DE LAS CATEGORIAS
@@ -30,9 +25,14 @@ const setDataApi = async () => {
       return (await axios(link)).data.results;
     })
   );
-
+  return getAllApi
+}
+const cargoalDB =async()=>{ 
   
-  const cargoalDB = getAllApi.flat().map((e) => {
+  const getAllApi1  =await setDataApi()
+  const data =getAllApi1.flat().map((e) => {
+    e.size = [{id:1, number: 35, stock:5, solds:0}, {id:2, number:36, stock:5, solds:0},{id:3, number:37, stock:5, solds:0},{id:4, number:38, stock:5, solds:0},{id: 5, number:39, stock:5, solds:0},{id:6, number:40, stock:5, solds:0},{id:7, number:41, stock:5, solds:0},{id:8, number:42, stock:5, solds:0},{id:9, number:43, stock:5, solds:0},{id:10, number:44, stock:5, solds:0},{id:11, number:45, stock:5, solds:0}]
+   
     return ({
       id: e.id,
       title: e.title,
@@ -41,31 +41,46 @@ const setDataApi = async () => {
       model: e.attributes && e.attributes.length === 3 ? e.attributes[2].value_name : "Not found",
       price: e.price, //parseInt(s.price)
       category: e.category_id,
-      stock: e.available_quantity,
-      sold: e.sold_quantity,
-      size: [{id:35, stock:5, counter:0}, {id:36, stock:5, counter:0},{id:37, stock:5, counter:0},{id:38, stock:5, counter:0},{id:39, stock:5, counter:0},{id:40, stock:5, counter:0},{id:41, stock:5, counter:0},{id:42, stock:5, counter:0},{id:43, stock:5, counter:0},{id:44, stock:5, counter:0},{id:45, stock:5, counter:0}]
+      size: e.size ? e.size.map(s=>{
+        return({
+          id: s.id,
+          number: s.number,
+          stock: s.stock,
+          solds: s.solds
+        })
+      }) : "Not found"
     });
   })
-console.log(cargoalDB.size);
-  const cargoFinal = cargoalDB.filter(e => e.id !== 'MLA1142122158')
+ 
+  const cargoFinal = data.filter(e => e.id !== 'MLA1142122158')
+
+  return cargoFinal
+}
   //cargo los productos al db y necesita que ya este cargada las categoria para que se cree la relacion
-  await Promise.all(
-    cargoFinal.map(async (el) => {
-      const newProduct = await Product.create(el);
-      const foundBrand = await Brand.findByPk(el.brand);
-      const foundSize = await Size.findAll({where:{ id: { [Op.in]: [35,36,37,38,39,40,41,42,43,44,45]}}});
-      //console.log(foundSize);
-      const foundCategories = await Category.findByPk(el.category);
-      await newProduct.setBrand(foundBrand);
-      await newProduct.addSize(foundSize);
-      await newProduct.setCategory(foundCategories);
-      return newProduct;
-    })
-  );
-  //console.log("Datos cargados");
-  let dataDb = await Product.findAll({ include: { all: true } });
-  return dataDb;
-};
+ const getAllProducts = async()=>{
+  const cargoFinal1 = await cargoalDB()
+   await Promise.all(
+     cargoFinal1.flat().map(async (el) => {
+       const newProduct = await Product.create({
+        id:el.id,
+        title:el.title,
+        image:el.image,
+        model:el.model,
+        price:el.price,
+        solds:el.solds
+       });
+       const foundBrand = await Brand.findByPk(el.brand);
+       const foundSize = el.size.map(s=>s.id)
+       const foundCategories = await Category.findByPk(el.category);
+       await newProduct.setBrand(foundBrand);
+       await newProduct.addSizes(foundSize);
+       await newProduct.setCategory(foundCategories);
+       return newProduct;
+     })
+   );
+   let dataDb = await Product.findAll({ include: { all: true } });
+   return dataDb;
+}
 
 const getDbCategories = async () => {
   const foundCategories = await Category.findAll({ include: { all: true } });
@@ -87,4 +102,4 @@ const getDbSize = async () => {
 };
 
 
-module.exports = { getDb, getDbCategories, setDataApi, getDbBrand, getDbSize };
+module.exports = { getDbCategories, getAllProducts, getDbBrand, getDbSize, cargoalDB };

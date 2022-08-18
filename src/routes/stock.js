@@ -3,84 +3,49 @@ const { Product, Size } = require("../db");
 const {Op} = require("sequelize")
 const router = Router();
 
-// router.post("/", async(req, res)=>{
-//     const {idAll} = req.body
-//     let productId= [];
-//     let sizeId = [];
-//     let productArray = [];
-
-//    for(let i = 0; i < idAll.length; i++){
-//     productId.push(idAll[i].idP) && sizeId.push(idAll[i].idS);    
-//    }
-
-//    for(let i = 0; i < productId.length; i++){
-//     const productCopy = await Product.findOne({ where: { id: productId[i] }, include: Size });
-//     productArray.push(productCopy);
-//       //for(let i = 0; i < sizeArray.length; i++){            
-//         const stockrest = (productArray[i].sizes.find(s=> s.id === sizeId[i]).stock -1); 
-//         console.log(stockrest);        
-//        } 
-//     });    
+router.put("/", async (req, res) => {
+  try{
+    const idAll = req.body.cart;
+    let productId = [];
+    let sizeId ;
+    let productArray = [];
     
+    for (let i = 0; i < idAll.length; i++) {
+      sizeId=idAll[i].sizeNumber;
+      productId.push(idAll[i].id)
+      console.log(sizeId)
+  }
 
-    //PUT Stock
-    router.put("/", async (req, res) => {
-      const { idAll } = req.body;
-
-      let productId = [];
-      let sizeId = [];
-      let productArray = [];
-      let productCopy = [];
-
-      for (let i = 0; i < idAll.length; i++) {
-        productId.push(idAll[i].idP) && sizeId.push(idAll[i].idS);
-      }
-
-      for (let i = 0; i < productId.length; i++) {
-        productCopy = await Product.findOne({
-          where: { id: productId[i] },
-          include: Size,
-        });
-        productCopy.sizes.find((s) => s.id === sizeId[i]).stock =
-          productCopy.sizes.find((s) => s.id === sizeId[i]).stock - 1;
-
-        await productCopy.save();
-        productArray.push(productCopy);
-        console.log(productArray);
-      }
-      res.status(200).json(productArray);
-    });
-        
-
-
-
-
-
-
-        // const productsCopy = await Product.findOne({ where: { id: idP }, include: Size });
-        
-        // const prod = productsCopy.sizes.find(s => s.id === idS);
-        // const prod1 = (prod.stock -1);
-        // console.log(prod1); 
-       
+  for (let i = 0; i < productId.length; i++) {
+     const productCopy = await Product.findOne({
+      where: { id: productId[i] },include:[{model:Size, where:{number:{[Op.or]:sizeId.map(e=>e)}}}]})
+     console.log(productCopy.sizes.map(e=>e))
+      const data = productCopy.sizes.map(s=>s.id)
      
-    
-       
-    
-        
-        
-        
-        
-        // console.log(productsCopy, "productsCopy")
-        // const result = productsCopy.map(p=>p.sizes)
-        // console.log(result, "result")
-        
-        //     for (let i = 0; i < result.sizes.length; i++) {
-        //       if(result.sizes[i].id===mapIdS) console.log(result.sizes[i].id===mapIdS)
-        //     }
-        
-        // console.log(reussizes, "sizes")
-        
+    productCopy.removeSizes(data)
+   
+    for (let j = 0; j < productCopy.sizes.length; j++) {
+      const newSizes = await  Size.create({
+            number: productCopy.sizes[j].number,
+            stock: productCopy.sizes[j].stock -1,
+            solds: productCopy.sizes[j].solds +1
+        })
+        console.log(newSizes)
+      await productCopy.addSize(newSizes)
+      }
+      await productCopy.save();
+  
+    productArray.push(productCopy);
+   }
+
+   res.status(200).json(productArray)
+
+  } catch(error){
+    console.log(error)
+    res.status(404).json(error)
+  }
+});
+
 
 
 

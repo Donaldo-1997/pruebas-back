@@ -20,7 +20,7 @@ function validateAttributes(name, surname, nickname, email, phone_number, date_o
 }
 
 
-function validateAttribute(name, surname, nickname, phone_number, date_of_Birth, address){
+function validateAttribute(name, surname, phone_number, date_of_Birth, address){
     if (!name || (typeof name !== "string") || (name.length < 0) ){
         return "The User Name must exist and must be a character string"
     } else if (!surname || (typeof surname !== "string") || (surname.length < 0) ){

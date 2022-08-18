@@ -67,7 +67,8 @@ router.post("/signup", async (req, res) => {
        const user = await User.findOne({
         where: {
             email: email
-        }
+        },
+        include: [{all: true}]
     }) 
         if (!user) {
             res.status(404).json({ msg: "Email o contraseña incorrecta" });

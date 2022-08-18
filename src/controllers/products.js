@@ -1,8 +1,6 @@
 const { Product, Brand, Category, Size } = require('../db');
 const { Op } = require('sequelize');
-const { setDataApi } = require('.');
-
-let cargo = false
+const { getAllProducts } = require('.');
 
 async function getByName(name, asc_desc) {
     try {
@@ -87,7 +85,7 @@ async function getBySize(size) {
       include: [
         { model: Brand },
         { model: Category },
-        { model: Size, where: { id: size }},
+        { model: Size, where: { number: size }},
       ]
     })
     console.log(all)
@@ -100,16 +98,18 @@ async function getBySize(size) {
 
 async function getAll() {
     try {
-        let result = cargo ? await Product.findAll({
+        let result =  await Product.findAll({
           include: [
-            { model: Brand },
-            { model: Category }
+            { all: true }
           ]
-        }) : await setDataApi()
-
-        cargo = true;
-        
-        return result
+        })
+         if(result.length){
+           return result
+        }
+          else{
+             let data =await getAllProducts()
+             return data
+          }
 
       } catch (error) {
         throw error

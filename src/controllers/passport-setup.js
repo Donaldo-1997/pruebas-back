@@ -4,6 +4,7 @@ const { User } = require('../db.js');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
+const adminMails = ['donaldojbm7@gmail.com', 'nico.bringas0210@gmail.com', 'juann.carracedo7@gmail.com', 'giseltaboada1990@gmail.com']
 
 passport.use(
   new GoogleStrategy(
@@ -15,22 +16,32 @@ passport.use(
     },
     async function (request, accessToken, refreshToken, profile, done) {
       console.log(profile);
-      
-      const user = await User.findOne({ where: profile.email })
 
-      if(user === null) {
-        const data = {
+      const email = profile._json.email || profile.emails[0].value
+      
+      const [user, created] = await User.findOrCreate({ 
+        where: { email },
+        defaults: {
           name: profile._json.given_name,
           surname: profile._json.family_name,
-          email: profile._json.email,
           image: profile._json.picture,
-        }
+          isAdmin: adminMails.includes(profile._json.email)
+        } 
+      })
 
-        const newUser = await User.create(data)
-        console.log("data:" , data)
-        console.log("newUser:" , newUser)
-      }
-      return done(null, profile);
+      // if(user === null) {
+      //   const data = {
+      //     name: profile._json.given_name,
+      //     surname: profile._json.family_name,
+      //     email: profile._json.email,
+      //     image: profile._json.picture,
+      //     isAdmin: adminMails.includes(profile._json.email)
+      //   }
+
+      //   console.log("data:" , data)
+      //   console.log("newUser:" , newUser)
+      // }
+      return done(null, user);
     }
   )
 );
